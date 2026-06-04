@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "STUB. Schema for .agents/<agent-id>.json. Plan: ~/Developer/agentic_workflow/docs/plans/tier2_multi_agent.md (v2, Track 1 #4). Body to be authored in a separate session.",
+  "title": "agent-activity",
+  "type": "object",
+  "properties": {}
+}

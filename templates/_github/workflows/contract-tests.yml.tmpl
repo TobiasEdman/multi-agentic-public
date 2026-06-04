@@ -1,0 +1,74 @@
+# Contract tests — drift detection between agent-pair branches.
+#
+# Materialised at `<target-repo>/.github/workflows/contract-tests.yml` by
+# `agentic-task init`. Only enable in repos that ship an OpenAPI spec
+# (or other machine-readable contract); skip otherwise.
+#
+# Spec: multi-agentic/docs/specs/tier2_multi_agent.md (v2, §C reviewer
+# agents are complementary; this workflow handles automated drift).
+# Doc: multi-agentic/docs/contract-tests.md
+#
+# Tool: schemathesis (property-based fuzzer over OpenAPI). Pact is a
+# valid alternative when consumer-driven contracts are needed; see doc.
+
+name: contract-tests
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "**/openapi.json"
+      - "**/openapi.yaml"
+      - "**/openapi.yml"
+      - "src/**/api/**"
+      - "{{API_SOURCE_PATHS}}"
+
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  schemathesis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install schemathesis
+        run: pip install "schemathesis>=3.36"
+
+      - name: Start API for contract testing
+        # Replace with your repo's API startup. For services exposing
+        # OpenAPI at /v1/openapi.json, this is typically uvicorn / hypercorn.
+        run: |
+          {{API_STARTUP_CMD}}
+          # Wait for readiness
+          for i in {1..30}; do
+            curl -sf {{API_HEALTH_URL}} && break
+            sleep 1
+          done
+
+      - name: Run schemathesis against {{API_OPENAPI_URL}}
+        run: |
+          schemathesis run \
+            --checks all \
+            --hypothesis-max-examples=50 \
+            --workers=2 \
+            {{API_OPENAPI_URL}}
+
+      - name: Comment summary on PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STATUS="${{ job.status }}"
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "[contract-tests] schemathesis run: **${STATUS}**. See workflow logs for details."

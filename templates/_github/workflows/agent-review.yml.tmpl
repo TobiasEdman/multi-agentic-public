@@ -1,0 +1,17 @@
+# STUB — agent-review CI workflow template.
+#
+# Materialised at `<target-repo>/.github/workflows/agent-review.yml` by
+# `agentic-task init`.
+#
+# Plan: ~/Developer/agentic_workflow/docs/plans/tier2_multi_agent.md (v2, Track 1 #6 — agent-as-CI-bot)
+#
+# Will trigger fresh-context reviewer subagents on PRs. Body to be authored
+# in a separate session.
+
+name: agent-review
+on: pull_request
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "stub — see plan §Track 1 #6"
