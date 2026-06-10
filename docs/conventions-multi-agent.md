@@ -11,11 +11,12 @@ Source spec: [`docs/specs/tier2_multi_agent.md`](specs/tier2_multi_agent.md) (v2
 1. [Vendor neutrality (cross-runtime)](#vendor-neutrality)
 2. [Attribution — multi-vendor trailers](#attribution-extended)
 3. [Branch-per-agent (runtime-aware)](#branch-per-agent-extended)
-4. [File locks — `.agents/tasks/`](#file-locks)
-5. [Writer/reviewer (runtime tagging)](#writer-reviewer-extended)
-6. [Agent-as-CI-bot — risk-tier × lens × model](#agent-as-ci-bot-extended)
-7. [Shared context (cross-runtime)](#shared-context-extended)
-8. [Non-goals (multi-agent-specific)](#non-goals-extended)
+4. [Session-per-tree (working-tree isolation)](#session-per-tree)
+5. [File locks — `.agents/tasks/`](#file-locks)
+6. [Writer/reviewer (runtime tagging)](#writer-reviewer-extended)
+7. [Agent-as-CI-bot — risk-tier × lens × model](#agent-as-ci-bot-extended)
+8. [Shared context (cross-runtime)](#shared-context-extended)
+9. [Non-goals (multi-agent-specific)](#non-goals-extended)
 
 ---
 
@@ -64,7 +65,36 @@ Examples:
 
 Reserved prefixes for **fully autonomous PRs** (cloud sessions, scheduled tasks): `claude/<slug>`, `copilot/<slug>`, `codex/<slug>`. They distinguish "I drove" from "the model ran unattended."
 
-## <a id="file-locks"></a>4. File locks — `.agents/tasks/`
+## <a id="session-per-tree"></a>4. Session-per-tree (working-tree isolation)
+
+**One concurrent session per working tree.** Branch-per-agent (§3) and file-locks (§5) only work if each session has its own working directory — git's index is shared per tree, so two simultaneous sessions in the same `<repo>/` racing on `git add`/`commit`/`push` will collide regardless of which branch they think they're on.
+
+Use `git worktree` to give each session its own checkout:
+
+```bash
+cd <repo>
+git fetch origin
+git worktree add ../<repo>-wt-<branch-slug> -b agent/<initials>/<runtime>/<area>-<slug> origin/main
+# Open the per-runtime session in the new directory
+```
+
+Worktrees share the `.git/` object store (one repo) but have independent staging areas and checkouts. Pushes can still collide on the remote — that's what §5 file-locks coordinate.
+
+**Detection.** Per-runtime harnesses are expected to surface "another session in same cwd" warnings:
+
+- Claude Code: `~/.claude/hooks/concurrent-session-warn.sh` (SessionStart) — reads cadence-state files, flags simultaneous sessions in same cwd, emits `permissionDecision: "ask"` for matches < 1h old.
+- Codex / Mistral: equivalent hook TBD when those runtimes ship session-state files in a discoverable location.
+
+**Failure modes this prevents** (all observed in real corpora):
+
+- Two sessions on the same branch in same tree → `git add` races, stale-file reads, second push rejected non-fast-forward, manual `git reset --hard` + `--force-with-lease` to recover.
+- Stacked PRs from one session against overlapping files → rebase conflicts at merge time. (This one is out of scope for session-per-tree; it needs the merge-queue spec in [`merge-queue.md`](merge-queue.md).)
+
+**When a single working tree is acceptable:** read-only sessions (you're just answering questions, not editing). Otherwise default to worktrees in any repo with concurrent agent activity.
+
+Source incidents: `<geo-ml-repo>` 2026-06-08 — 3 Claude Code sessions on the same feature branch in the same working tree, noticed manually via a "heads-up from the dev-env session" message between them. `<biz-analytics-repo>` 2026-05-28: 4 sessions in same cwd producing merge conflicts in two frontend components, resolved via `git reset --hard` + `--force-with-lease`. The 30+ detector findings of `same-branch-multi-session` since are why this section exists.
+
+## <a id="file-locks"></a>5. File locks — `.agents/tasks/`
 
 Repo-committed JSON, one file per task, with git push as the atomic-lock mechanism (Anthropic C-compiler pattern, scaled to multi-vendor). Single-agent repos don't need this — there's no contention to resolve.
 
@@ -74,7 +104,7 @@ Reference implementation: the `agentic-task` CLI in this repo (`agentic-task cla
 
 The earlier v1 phrasing of "file-lock convention via `.agents/<agent-id>.json`" (per-agent file) was rejected in plan v2 in favour of the per-task model — it scales to multi-vendor and matches the C-compiler pattern.
 
-## <a id="writer-reviewer-extended"></a>5. Writer/reviewer (runtime tagging)
+## <a id="writer-reviewer-extended"></a>6. Writer/reviewer (runtime tagging)
 
 Extends base §7. Base comment format is `[<lens>] <verdict>` (single runtime). With multiple runtimes reviewing the same PR, the format becomes:
 
@@ -84,7 +114,7 @@ Extends base §7. Base comment format is `[<lens>] <verdict>` (single runtime). 
 
 So 3 runtimes × 3 lenses = 9 distinguishable summary comments on a PR. Reviewer prompts in `.agents/prompts/` are unchanged (already vendor-neutral); only the comment-prefix convention extends.
 
-## <a id="agent-as-ci-bot-extended"></a>6. Agent-as-CI-bot — risk-tier × lens × model
+## <a id="agent-as-ci-bot-extended"></a>7. Agent-as-CI-bot — risk-tier × lens × model
 
 Extends base §8. Base specifies the lens dimension (gated by risk-tier classifier); this section adds the **model** dimension as a matrix axis:
 
@@ -96,7 +126,7 @@ Workflow file: [`.github/workflows/agent-review.yml`](../.github/workflows/agent
 
 **Complementary mechanism — contract tests.** Reviewer agents catch human-style problems (quality, security, docs); they don't catch API drift between agent-pair branches. When pair A ships `agent/te/claude/api-...` and pair B ships `agent/te/codex/ui-...` consuming the same OpenAPI spec, a contract-test workflow runs schemathesis against the live API and flags any deviation from the published spec as a red CI check. See [`contract-tests.md`](contract-tests.md) and the template at [`templates/_github/workflows/contract-tests.yml.tmpl`](../templates/_github/workflows/contract-tests.yml.tmpl). Enable in target repos that ship a machine-readable contract; skip otherwise.
 
-## <a id="shared-context-extended"></a>7. Shared context (cross-runtime)
+## <a id="shared-context-extended"></a>8. Shared context (cross-runtime)
 
 Extends base §9. Base mentions filesystem + MCP as the two channels. With multiple runtimes consuming the same MCP server (e.g. omni-rag for project-doc search), additional discipline applies on what does **not** travel cross-vendor:
 
@@ -106,7 +136,7 @@ Extends base §9. Base mentions filesystem + MCP as the two channels. With multi
 
 The omni-rag MCP server (lives in `agentic_workflow/`) is the canonical shared knowledge layer; all three runtimes consume the same server but each runtime's adapter handles tool-name mapping.
 
-## <a id="non-goals-extended"></a>8. Non-goals (multi-agent-specific)
+## <a id="non-goals-extended"></a>9. Non-goals (multi-agent-specific)
 
 Extends base §10. Base lists "no DOCX/PDF in `.agents/`" and "no secrets in commits". Multi-agent-specific non-goals:
 
