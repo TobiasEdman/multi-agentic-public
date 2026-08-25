@@ -85,3 +85,19 @@ These rules apply to any agent runtime opening a session in this repo (Claude / 
 Per-runtime enforcement (where available):
 - Claude Code sessions: rules §3, §6, and §7 are enforced by hooks at `~/.claude/hooks/active-jobs-guard.sh`, `~/.claude/hooks/verify-artefakt.sh`, and `~/.claude/hooks/co-authored-by.sh` respectively. See [`CLAUDE.md`](CLAUDE.md) for details.
 - Codex / Mistral: hook-level enforcement is per-runtime; see the corresponding addendum file when those tracks activate. The rules above are policy regardless of enforcement mechanism.
+
+<!-- agentic-task:coordination:start -->
+## Cross-runtime coordination
+
+This section is managed by `agentic-task`. Repository-specific instructions
+outside this block remain authoritative.
+
+- Every writing agent session uses an exclusively owned worktree.
+- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.
+- Claim task paths before editing and release or complete the claim afterward.
+- Never share a branch and working tree between concurrent writing sessions.
+- A dirty working tree belongs to its current session; other agents must not
+  edit it.
+- Questions and diagnosis do not authorize mutation. Verify non-trivial work
+  before declaring it complete.
+<!-- agentic-task:coordination:end -->
