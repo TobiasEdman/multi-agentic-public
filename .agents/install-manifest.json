@@ -1,23 +1,23 @@
 {
   "artifacts": [
     {
-      "after_sha256": "7d21f5a82e6f498e640859ef6c2e17c4e34f6ea2d1fa8183e08276ddf7b644e6",
+      "after_sha256": "91d9db7e8a973726913418ebb0853907fcfad73b3ea1eaf8aab70591c2f30102",
       "before_sha256": "53ddaaba12750bb9817c18ad5771a65589719199e2412a30031e8a10471f9f93",
-      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination\n\nThis section is managed by `agentic-task`. Repository-specific instructions\noutside this block remain authoritative.\n\n- Every writing agent session uses an exclusively owned worktree.\n- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.\n- Claim task paths before editing and release or complete the claim afterward.\n- Never share a branch and working tree between concurrent writing sessions.\n- A dirty working tree belongs to its current session; other agents must not\n  edit it.\n- Questions and diagnosis do not authorize mutation. Verify non-trivial work\n  before declaring it complete.\n<!-- agentic-task:coordination:end -->\n",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination\n\nThis section is managed by `agentic-task`. Repository-specific instructions\noutside this block remain authoritative.\n\n- Every writing agent session uses an exclusively owned worktree.\n- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.\n- Claim a task before editing and complete it afterward. Claims arbitrate whole\n  tasks; coordinate intended file scope explicitly because the schema does not\n  enforce path ownership.\n- Never share a branch and working tree between concurrent writing sessions.\n- A dirty working tree belongs to its current session; other agents must not\n  edit it.\n- Questions and diagnosis do not authorize mutation. Verify non-trivial work\n  before declaring it complete.\n<!-- agentic-task:coordination:end -->\n",
       "kind": "block",
       "owned": false,
       "path": "AGENTS.md"
     },
     {
-      "after_sha256": "fc2fc1c26fb5d5c76983e1f74635bd942a6e172a24d3b341e016b1353bc22dbf",
+      "after_sha256": "679d4e7379f75b16100f6e1004efc021fa71c1739f7b6e7cfbcc171b5ddffac0",
       "before_sha256": "080acf7c9aa808b1ad49353a725bb30787a433f2f3b35e1edf6fd84851643a82",
-      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination mechanics\n\nShared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but\nmust not weaken or duplicate that policy. Use a Claude worktree for every\nwriting session and the vendor-neutral `agentic-task` CLI for path claims.\n<!-- agentic-task:coordination:end -->\n",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination mechanics\n\nShared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but\nmust not weaken or duplicate that policy. Use a Claude worktree for every\nwriting session and the vendor-neutral `agentic-task` CLI for task claims.\n<!-- agentic-task:coordination:end -->\n",
       "kind": "block",
       "owned": false,
       "path": "CLAUDE.md"
     },
     {
-      "after_sha256": "a746f158a6d68672b83fb77701307b16b5746247a7b7678dd796bf9035ccacb3",
+      "after_sha256": "6838c4f7586b753a9161fa880d8c87167502bdbcfa12d5db626a155c721a1d85",
       "before_resource": "agents-readme-legacy-v1.md",
       "before_sha256": "1c4835470f9164e7686cb99177b9a0819d7998e0a2a8c739615626c99d2e7cc9",
       "kind": "replace",
@@ -25,9 +25,10 @@
       "path": ".agents/README.md"
     },
     {
-      "after_sha256": "3e0c5f42d05e87decc36fa234336f3c8d161489f09c818cb9bcd865d14f17894",
+      "after_sha256": "3979a5a7446596622ec7a8f2824b433aaee568ea8e08245c91e3a192fe06481f",
+      "before_resource": "schema-installer-v1.json",
       "before_sha256": "3e0c5f42d05e87decc36fa234336f3c8d161489f09c818cb9bcd865d14f17894",
-      "kind": "file",
+      "kind": "replace",
       "owned": false,
       "path": ".agents/schema.json"
     },
@@ -42,7 +43,7 @@
   "created_directories": [
     ".agents/tasks"
   ],
-  "installer_version": "1",
+  "installer_version": "2",
   "profile": "coordination",
   "schema_version": "1"
 }
