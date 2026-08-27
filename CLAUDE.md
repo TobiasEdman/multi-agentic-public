@@ -32,3 +32,14 @@ Without a verification artefact: no commit. If verification is impossible in thi
 - [`hooks/co-authored-by-dual.sh`](hooks/co-authored-by-dual.sh) ↔ `~/.claude/hooks/co-authored-by.sh` — the dual-vendor hook here will eventually replace the Claude-only hook. Until it does, the global hook is canonical.
 - [`.github/workflows/agent-review.yml`](.github/workflows/agent-review.yml) ↔ [`.agents/prompts/{pragmatic,security,docs}-reviewer.md`](.agents/prompts/) — the workflow loads the three reviewer prompts from `.agents/prompts/` at runtime (see the `prompt:` block, `Read .agents/prompts/...-reviewer.md` line). If the workflow is replicated to another repo, `.agents/prompts/` must travel with it or the review job fails on a missing path. Discovered 2026-04-27 per `docs/track1-replication-findings.md` Friction #3.
 - [`hooks/worktree-create.sh`](hooks/worktree-create.sh) + [`hooks/worktree-remove.sh`](hooks/worktree-remove.sh) ↔ [`.claude/settings.json`](.claude/settings.json) — the project-scoped settings registers `WorktreeCreate`/`WorktreeRemove` against `$CLAUDE_PROJECT_DIR/hooks/worktree-{create,remove}.sh`. The repo files are **canonical** (no symlinks); the hook only fires when `claude -w` runs from inside this repo. [`tests/test_worktree_hooks.py`](tests/test_worktree_hooks.py) exercises the script directly via piped JSON. Per-user behaviour overrides live in `~/.claude/worktree-config/<repo>.env` — e.g. `BRANCH_PREFIX="agent/te/claude/multi-agentic-"` + `INSTALL_CMD="uv sync"` for this repo. The hook sources `default.env` first, then `<repo>.env` on top. Earlier attempt at user-global registration in `~/.claude/settings.json` failed validation ("Invalid key in record" for `WorktreeCreate` at the global scope) — these events are project-scoped only. Discovered 2026-04-28.
+
+<!-- agentic-task:coordination:start -->
+## Cross-runtime coordination mechanics
+
+Shared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but
+must not weaken or duplicate that policy. Use a Claude worktree for every
+writing session and the vendor-neutral `agentic-task` CLI for task claims.
+Use `~/.agents/bin/agentic-continuity` for personal checkpoints, live messages,
+and active-job locks; commit only validated task-scoped `.agents/handoffs/`
+records for another machine.
+<!-- agentic-task:coordination:end -->

@@ -1,0 +1,64 @@
+{
+  "artifacts": [
+    {
+      "after_sha256": "f79f23dbba4ebae3c93c1be73d12c74ae265feb242d70ce5e45b00461fa9658d",
+      "before_sha256": "53ddaaba12750bb9817c18ad5771a65589719199e2412a30031e8a10471f9f93",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination\n\nThis section is managed by `agentic-task`. Repository-specific instructions\noutside this block remain authoritative.\n\n- Every writing agent session uses an exclusively owned worktree.\n- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.\n- Claim a task before editing and complete it afterward. Claims arbitrate whole\n  tasks; coordinate intended file scope explicitly because the schema does not\n  enforce path ownership.\n- Transfer durable execution state through immutable, task-scoped files under\n  `.agents/handoffs/<task-id>/`; never use one mutable `LATEST.md`.\n- Never share a branch and working tree between concurrent writing sessions.\n- A dirty working tree belongs to its current session; other agents must not\n  edit it.\n- Questions and diagnosis do not authorize mutation. Verify non-trivial work\n  before declaring it complete.\n- Personal checkpoints, snapshots, live inbox messages, active-session state,\n  and running-code locks use the shared local `~/.agents/continuity/` store\n  through runtime adapters, not vendor stores.\n<!-- agentic-task:coordination:end -->\n",
+      "kind": "block",
+      "owned": false,
+      "path": "AGENTS.md"
+    },
+    {
+      "after_sha256": "0d779b1177c331455e2d0339d1d5b99d4cb6245e87bf11ce15700703e57e12a1",
+      "before_sha256": "080acf7c9aa808b1ad49353a725bb30787a433f2f3b35e1edf6fd84851643a82",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination mechanics\n\nShared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but\nmust not weaken or duplicate that policy. Use a Claude worktree for every\nwriting session and the vendor-neutral `agentic-task` CLI for task claims.\nUse `~/.agents/bin/agentic-continuity` for personal checkpoints, live messages,\nand active-job locks; commit only validated task-scoped `.agents/handoffs/`\nrecords for another machine.\n<!-- agentic-task:coordination:end -->\n",
+      "kind": "block",
+      "owned": false,
+      "path": "CLAUDE.md"
+    },
+    {
+      "after_sha256": "59ef92bba167614695916aa46c252194d39e6c869f250907ee01673bbc852068",
+      "before_resource": "agents-readme-legacy-v1.md",
+      "before_sha256": "1c4835470f9164e7686cb99177b9a0819d7998e0a2a8c739615626c99d2e7cc9",
+      "kind": "replace",
+      "owned": false,
+      "path": ".agents/README.md"
+    },
+    {
+      "after_sha256": "3979a5a7446596622ec7a8f2824b433aaee568ea8e08245c91e3a192fe06481f",
+      "before_resource": "schema-installer-v1.json",
+      "before_sha256": "3e0c5f42d05e87decc36fa234336f3c8d161489f09c818cb9bcd865d14f17894",
+      "kind": "replace",
+      "owned": false,
+      "path": ".agents/schema.json"
+    },
+    {
+      "after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "before_sha256": null,
+      "kind": "file",
+      "owned": true,
+      "path": ".agents/tasks/.gitkeep"
+    },
+    {
+      "after_sha256": "4b04d30517d769c67039b2ae006dc9ec16c2dc186334f6525a8ce946f115eb43",
+      "before_sha256": null,
+      "kind": "file",
+      "owned": true,
+      "path": ".agents/handoff-schema.json"
+    },
+    {
+      "after_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "before_sha256": null,
+      "kind": "file",
+      "owned": true,
+      "path": ".agents/handoffs/.gitkeep"
+    }
+  ],
+  "created_directories": [
+    ".agents/tasks",
+    ".agents/handoffs"
+  ],
+  "installer_version": "3",
+  "profile": "coordination",
+  "schema_version": "1"
+}
