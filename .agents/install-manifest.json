@@ -1,23 +1,23 @@
 {
   "artifacts": [
     {
-      "after_sha256": "f79f23dbba4ebae3c93c1be73d12c74ae265feb242d70ce5e45b00461fa9658d",
+      "after_sha256": "8840827bb851b2c578dcbdfb126fa83299abcf32cafc0687f3f58085e91155ba",
       "before_sha256": "53ddaaba12750bb9817c18ad5771a65589719199e2412a30031e8a10471f9f93",
-      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination\n\nThis section is managed by `agentic-task`. Repository-specific instructions\noutside this block remain authoritative.\n\n- Every writing agent session uses an exclusively owned worktree.\n- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.\n- Claim a task before editing and complete it afterward. Claims arbitrate whole\n  tasks; coordinate intended file scope explicitly because the schema does not\n  enforce path ownership.\n- Transfer durable execution state through immutable, task-scoped files under\n  `.agents/handoffs/<task-id>/`; never use one mutable `LATEST.md`.\n- Never share a branch and working tree between concurrent writing sessions.\n- A dirty working tree belongs to its current session; other agents must not\n  edit it.\n- Questions and diagnosis do not authorize mutation. Verify non-trivial work\n  before declaring it complete.\n- Personal checkpoints, snapshots, live inbox messages, active-session state,\n  and running-code locks use the shared local `~/.agents/continuity/` store\n  through runtime adapters, not vendor stores.\n<!-- agentic-task:coordination:end -->\n",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination\n\nThis section is managed by `agentic-task`. Repository-specific instructions\noutside this block remain authoritative.\n\n- Every writing agent session uses an exclusively owned worktree.\n- Use runtime-labelled branches: `agent/<initials>/<runtime>/<area>-<slug>`.\n- Claim a task before editing and complete it afterward. Claims arbitrate whole\n  tasks; coordinate intended file scope explicitly because the schema does not\n  enforce path ownership.\n- Run coordination commands through the absolute, non-editable operator wheel\n  runtime bound by `.agents/toolchain-lock.json`. Never execute a verifier or\n  coordination command from the repository or caller `PATH`.\n- Transfer durable execution state through immutable, task-scoped files under\n  `.agents/handoffs/<task-id>/`; never use one mutable `LATEST.md`.\n- Never share a branch and working tree between concurrent writing sessions.\n- A dirty working tree belongs to its current session; other agents must not\n  edit it.\n- Questions and diagnosis do not authorize mutation. Verify non-trivial work\n  before declaring it complete.\n- Personal checkpoints, snapshots, live inbox messages, active-session state,\n  and running-code locks use the shared local `~/.agents/continuity/` store\n  through runtime adapters, not vendor stores.\n<!-- agentic-task:coordination:end -->\n",
       "kind": "block",
       "owned": false,
       "path": "AGENTS.md"
     },
     {
-      "after_sha256": "0d779b1177c331455e2d0339d1d5b99d4cb6245e87bf11ce15700703e57e12a1",
+      "after_sha256": "fcfc1d3e7c14bec58199bc2e215725159ef54dece72a8d88734303c7144376df",
       "before_sha256": "080acf7c9aa808b1ad49353a725bb30787a433f2f3b35e1edf6fd84851643a82",
-      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination mechanics\n\nShared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but\nmust not weaken or duplicate that policy. Use a Claude worktree for every\nwriting session and the vendor-neutral `agentic-task` CLI for task claims.\nUse `~/.agents/bin/agentic-continuity` for personal checkpoints, live messages,\nand active-job locks; commit only validated task-scoped `.agents/handoffs/`\nrecords for another machine.\n<!-- agentic-task:coordination:end -->\n",
+      "fragment": "\n<!-- agentic-task:coordination:start -->\n## Cross-runtime coordination mechanics\n\n@AGENTS.md\n\nShared policy lives in `AGENTS.md`. Claude-specific hooks may enforce it but\nmust not weaken or duplicate that policy. Use a Claude worktree for every\nwriting session. Invoke task and continuity commands only through the external,\nnon-editable operator wheel runtime described in `.agents/README.md`; never\nexecute a verifier from the repository or caller `PATH`. Commit only validated task-scoped\n`.agents/handoffs/` records for another machine.\n<!-- agentic-task:coordination:end -->\n",
       "kind": "block",
       "owned": false,
       "path": "CLAUDE.md"
     },
     {
-      "after_sha256": "59ef92bba167614695916aa46c252194d39e6c869f250907ee01673bbc852068",
+      "after_sha256": "97e1f5782e0178d2fafd30d4d366d7968632eaa3b010d62784ac6e6e1ad15509",
       "before_resource": "agents-readme-legacy-v1.md",
       "before_sha256": "1c4835470f9164e7686cb99177b9a0819d7998e0a2a8c739615626c99d2e7cc9",
       "kind": "replace",
@@ -25,7 +25,7 @@
       "path": ".agents/README.md"
     },
     {
-      "after_sha256": "3979a5a7446596622ec7a8f2824b433aaee568ea8e08245c91e3a192fe06481f",
+      "after_sha256": "25e3e2211422a560381bf23b4364c8bdeccee46ec37e96bcf80bcd952dc809c4",
       "before_resource": "schema-installer-v1.json",
       "before_sha256": "3e0c5f42d05e87decc36fa234336f3c8d161489f09c818cb9bcd865d14f17894",
       "kind": "replace",
@@ -40,7 +40,7 @@
       "path": ".agents/tasks/.gitkeep"
     },
     {
-      "after_sha256": "4b04d30517d769c67039b2ae006dc9ec16c2dc186334f6525a8ce946f115eb43",
+      "after_sha256": "cc0bb7bafda1da5388a61563ef45b89a93f97fa1e149eecadb86d7eeece0e46c",
       "before_sha256": null,
       "kind": "file",
       "owned": true,
@@ -52,13 +52,20 @@
       "kind": "file",
       "owned": true,
       "path": ".agents/handoffs/.gitkeep"
+    },
+    {
+      "after_sha256": "f254e347071d396229c5e7c18849fc47c86b58da8e673d0bd7c7ec03bcfc44c3",
+      "before_sha256": null,
+      "kind": "file",
+      "owned": true,
+      "path": ".agents/toolchain-lock.json"
     }
   ],
   "created_directories": [
     ".agents/tasks",
     ".agents/handoffs"
   ],
-  "installer_version": "3",
+  "installer_version": "4",
   "profile": "coordination",
   "schema_version": "1"
 }
