@@ -20,7 +20,7 @@ Spec: docs/track1-replication-findings.md Friction #2; commit msg of
 from __future__ import annotations
 
 import re
-from typing import Iterable
+from collections.abc import Iterable
 
 _VAR_PATTERN = re.compile(r"\{\{([A-Z][A-Z0-9_]*)\}\}")
 _BLOCK_PATTERN = re.compile(

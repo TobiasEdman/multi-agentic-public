@@ -70,6 +70,7 @@ def _create(repo: Path, home: Path, name: str) -> subprocess.CompletedProcess:
         text=True,
         capture_output=True,
         env=env,
+        check=False,
     )
 
 
@@ -81,6 +82,7 @@ def _remove(worktree: Path, home: Path) -> subprocess.CompletedProcess:
         text=True,
         capture_output=True,
         env=env,
+        check=False,
     )
 
 

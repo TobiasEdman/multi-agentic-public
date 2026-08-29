@@ -23,6 +23,7 @@ def _run(msg: str, tmp_path: Path) -> int:
         [str(_HOOK), str(msg_file)],
         capture_output=True,
         text=True,
+        check=False,
     )
     return r.returncode
 
@@ -89,12 +90,13 @@ def test_missing_file_exits_2(tmp_path: Path) -> None:
         [str(_HOOK), str(tmp_path / "does-not-exist")],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert r.returncode == 2
 
 
 def test_no_arg_exits_nonzero(tmp_path: Path) -> None:
-    r = subprocess.run([str(_HOOK)], capture_output=True, text=True)
+    r = subprocess.run([str(_HOOK)], capture_output=True, text=True, check=False)
     assert r.returncode != 0
 
 
