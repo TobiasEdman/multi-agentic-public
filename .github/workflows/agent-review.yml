@@ -61,7 +61,11 @@ jobs:
   review:
     needs: classify
     runs-on: ubuntu-latest
-    permissions: { contents: read, pull-requests: write }
+    # id-token is required by claude-code-action's OIDC exchange. Job-level
+    # permissions REPLACE the workflow-level block, so omitting it here drops
+    # the top-level grant and the action fails with "Could not fetch an OIDC
+    # token" — even when a credential is configured.
+    permissions: { contents: read, pull-requests: write, id-token: write }
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +133,6 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
-          timeout_minutes: 30
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
