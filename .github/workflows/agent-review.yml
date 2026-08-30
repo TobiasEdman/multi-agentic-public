@@ -61,7 +61,11 @@ jobs:
   review:
     needs: classify
     runs-on: ubuntu-latest
-    permissions: { contents: read, pull-requests: write }
+    # id-token is required by claude-code-action's OIDC exchange. Job-level
+    # permissions REPLACE the workflow-level block, so omitting it here drops
+    # the top-level grant and the action fails with "Could not fetch an OIDC
+    # token" — even when a credential is configured.
+    permissions: { contents: read, pull-requests: write, id-token: write }
     strategy:
       fail-fast: false
       matrix:
@@ -77,12 +81,40 @@ jobs:
         run: |
           for k in CLAUDE_CODE_OAUTH_TOKEN OPENAI_API_KEY MISTRAL_API_KEY; do
             v="${!k:-}"
-            [ -n "$v" ] && echo "::add-mask::$v"
+            if [ -n "$v" ]; then
+              echo "::add-mask::$v"
+            fi
           done
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+
+      - name: Detect review credential
+        id: credentials
+        run: |
+          case "${{ matrix.model }}" in
+            claude) value="${CLAUDE_CODE_OAUTH_TOKEN:-}" ;;
+            codex) value="${OPENAI_API_KEY:-}" ;;
+            mistral) value="${MISTRAL_API_KEY:-}" ;;
+            *) value="" ;;
+          esac
+          if [ -n "$value" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping ${{ matrix.model }} review: credential is not configured."
+          fi
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+
+      - name: Report unavailable reviewer
+        if: steps.credentials.outputs.available != 'true'
+        run: |
+          echo "Reviewer ${{ matrix.model }}/${{ matrix.lens }} was not run."
+          echo "Configure the provider credential before making this review required."
 
       # MVP: claude track. lens → prompt-file mapping:
       #   quality  → pragmatic-reviewer.md
@@ -94,12 +126,13 @@ jobs:
       # from Claude Code (CLI or Desktop) — it sets CLAUDE_CODE_OAUTH_TOKEN
       # in repo secrets via the GitHub App flow.
       - name: Run review (model=claude, lens=${{ matrix.lens }})
-        if: matrix.model == 'claude'
+        if: >-
+          matrix.model == 'claude' &&
+          steps.credentials.outputs.available == 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
-          timeout_minutes: 30
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
