@@ -37,6 +37,7 @@ def _run(payload: dict) -> tuple[int, str]:
         input=json.dumps(payload),
         capture_output=True,
         text=True,
+        check=False,
     )
     return r.returncode, r.stdout
 
@@ -136,7 +137,7 @@ def test_missing_trailer_asks() -> None:
 
 def test_missing_trailer_with_body_asks() -> None:
     cmd = 'git commit -m "feat: x\\n\\nLong body explaining the change\\n\\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"'
-    rc, out = _run(_bash_commit(cmd))
+    _rc, out = _run(_bash_commit(cmd))
     payload = json.loads(out)
     assert payload["hookSpecificOutput"]["permissionDecision"] == "ask", (
         "Co-Authored-By alone (no Verified-by) must still ask — §6 is independent of §7"
@@ -147,7 +148,7 @@ def test_empty_trailer_value_asks() -> None:
     """`Verified-by:` with no value must not satisfy the hook —
     the point is to force a verification claim, not just a label."""
     cmd = 'git commit -m "feat: x\\n\\nVerified-by: "'
-    rc, out = _run(_bash_commit(cmd))
+    _rc, out = _run(_bash_commit(cmd))
     payload = json.loads(out)
     assert payload["hookSpecificOutput"]["permissionDecision"] == "ask"
 
@@ -162,7 +163,7 @@ def test_only_co_authored_by_still_asks_verify() -> None:
         'git commit -m "feat: x\\n\\n'
         'Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"'
     )
-    rc, out = _run(_bash_commit(cmd))
+    _rc, out = _run(_bash_commit(cmd))
     payload = json.loads(out)
     assert payload["hookSpecificOutput"]["permissionDecision"] == "ask"
 
@@ -189,6 +190,7 @@ def test_empty_payload_silent() -> None:
         input="",
         capture_output=True,
         text=True,
+        check=False,
     )
     assert r.returncode == 0
 

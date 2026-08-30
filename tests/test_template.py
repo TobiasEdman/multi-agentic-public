@@ -140,15 +140,43 @@ def test_no_unresolved_placeholders_in_either_profile(template_text: str) -> Non
         assert "{{" not in out, f"unresolved placeholder in {profile} render"
 
 
+_MANAGED_START = "<!-- agentic-task:coordination:start -->"
+_MANAGED_END = "<!-- agentic-task:coordination:end -->"
+
+
+def _strip_managed_blocks(text: str) -> str:
+    """Drop installer-managed regions from a live AGENTS.md.
+
+    `agentic-task init` appends its own coordination section *after* the
+    template has been rendered, so those headers exist in every correctly
+    installed repo by design and can never appear in a template render.
+    Comparing them would fail the dogfooding check on exactly the repos
+    that are properly installed.
+    """
+    kept: list[str] = []
+    skipping = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == _MANAGED_START:
+            skipping = True
+        elif stripped == _MANAGED_END:
+            skipping = False
+        elif not skipping:
+            kept.append(line)
+    return "\n".join(kept)
+
+
 def test_multi_agent_render_against_repo_agents_md(template_text: str) -> None:
     """Sanity check: rendering with multi-agentic's own values produces text
     structurally consistent with the live AGENTS.md (same section headers).
 
     This is not a byte-for-byte comparison — the template is a generic shape
     that can grow/shrink prose between renders. The contract is that the
-    *section structure* matches, so dogfooding stays honest.
+    *section structure* matches, so dogfooding stays honest. Installer-managed
+    blocks are excluded: they are appended post-render and are not the
+    template's to produce.
     """
-    live_agents_md = (_REPO_ROOT / "AGENTS.md").read_text()
+    live_agents_md = _strip_managed_blocks((_REPO_ROOT / "AGENTS.md").read_text())
     rendered = render(
         template_text,
         {

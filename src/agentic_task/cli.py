@@ -17,9 +17,8 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -115,7 +114,7 @@ def list_tasks(
         resolve_path=True,
         help="Path to a git repo containing .agents/tasks/.",
     ),
-    status: Optional[str] = typer.Option(
+    status: str | None = typer.Option(
         None,
         "--status",
         help="Filter to tasks with this status (pending|claimed|in_progress|completed|blocked|abandoned).",
@@ -201,7 +200,7 @@ def main() -> None:
 
 def _utcnow_iso() -> str:
     """Return current UTC time as ``YYYY-MM-DDTHH:MM:SSZ`` (schema date-time format)."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _git(
@@ -226,7 +225,7 @@ def _try_push(repo: Path) -> bool:
     return _git(repo, "push", check=False).returncode == 0
 
 
-def _find_first_pending(tasks_dir: Path) -> Optional[Path]:
+def _find_first_pending(tasks_dir: Path) -> Path | None:
     """Return the lowest-id ``pending`` task file, ignoring archive/."""
     for f in sorted(tasks_dir.glob("*.json")):
         try:
