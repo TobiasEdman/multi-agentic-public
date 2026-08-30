@@ -61,11 +61,14 @@ jobs:
   review:
     needs: classify
     runs-on: ubuntu-latest
-    # id-token is required by claude-code-action's OIDC exchange. Job-level
-    # permissions REPLACE the workflow-level block, so omitting it here drops
-    # the top-level grant and the action fails with "Could not fetch an OIDC
-    # token" — even when a credential is configured.
-    permissions: { contents: read, pull-requests: write, id-token: write }
+    # id-token is deliberately NOT granted. The hardened review contract in
+    # multi-agentic (86ced28) keeps the reviewer advisory and unable to mint
+    # an app token, and asserts that absence in tests. Job-level permissions
+    # REPLACE the workflow-level block, so the id-token: write declared at the
+    # top of this file is inert unless repeated here — that is the control,
+    # not a bug. A repo wanting a functioning reviewer must opt into the extra
+    # privilege deliberately, and pin its actions to SHAs before doing so.
+    permissions: { contents: read, pull-requests: write }
     strategy:
       fail-fast: false
       matrix:
