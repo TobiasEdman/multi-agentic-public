@@ -30,7 +30,6 @@ permissions:
   contents: read
   pull-requests: write
   issues: read
-  id-token: write
 
 env:
   REVIEW_EVENT: COMMENT  # change to REQUEST_CHANGES to block merge
@@ -48,7 +47,7 @@ jobs:
       lenses:  ${{ steps.classify.outputs.lenses }}
       models:  ${{ steps.classify.outputs.models }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with: { fetch-depth: 0 }
       - name: Risk-tier classifier (vendor-neutral)
         id: classify
@@ -75,7 +74,7 @@ jobs:
         lens:  ${{ fromJSON(needs.classify.outputs.lenses) }}
         model: ${{ fromJSON(needs.classify.outputs.models) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -132,7 +131,7 @@ jobs:
         if: >-
           matrix.model == 'claude' &&
           steps.credentials.outputs.available == 'true'
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1.0.210
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
