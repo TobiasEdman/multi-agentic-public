@@ -28,6 +28,10 @@ If you are a Claude Code / Codex / Mistral session opened in this repo, read [`A
 uv sync && uv run pytest
 ```
 
+`uv.lock` is committed release input, not local cache state. Regenerate it with
+`uv --no-config lock` whenever `pyproject.toml` changes, verify with
+`uv --no-config lock --check --offline`, and commit both files together.
+
 Or with plain pip:
 
 ```bash
