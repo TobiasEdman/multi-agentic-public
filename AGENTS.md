@@ -44,7 +44,7 @@ When you start in a fresh `.claude/worktrees/<slug>/` (created by `claude -w "<s
 
 - **Per-task commits.** Each scaffolding step, each feature, each fix is its own commit. No "init everything" or "WIP" commits.
 - **Verify-artefakt before declaring done.** Per global rule §6: every non-trivial change ships with a passing test, a confirming command output, or an explicit "I cannot verify in this environment" note.
-- **Co-Authored-By trailer on every agent-authored commit** (global rule §7). The trailer identifies the agent vendor; the human stays as `author`. See `hooks/co-authored-by-dual.sh` for the multi-vendor extension.
+- **Agent-authored commits are authored by the agent** (global rule §7, amended 2026-08-31). Set author *and* committer to the agent identity — work the agent wrote is not credited to the human. Keep the `Co-Authored-By:` trailer alongside it: the author line records *that* an agent wrote the change, the trailer records *which model*. The same applies to pull requests and comments, which are posted through the coordination App rather than a human token. See `hooks/co-authored-by-dual.sh` for the multi-vendor trailer extension.
 - **Dogfooding.** This repo's own `AGENTS.md` (this file) is the canonical example of what the toolkit produces. If the template in `templates/AGENTS.md.tmpl` drifts from this file, fix the template.
 
 ## Convention spec
